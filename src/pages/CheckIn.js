@@ -9,37 +9,6 @@ export default function CheckIn() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchProfile = async () => {
-    try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/user/profile`, {
-        headers: getAuthHeader()
-      });
-      setUser(res.data);
-      setStreak(res.data.streak_days);
-    } catch (err) {
-      setError('获取资料失败');
-      console.error('获取用户资料失败:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const checkToday = async () => {
-    try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/check-in/today`, {
-        headers: getAuthHeader()
-      });
-      setCheckedToday(res.data.checked_in);
-    } catch (err) {
-      console.error('检查打卡失败:', err);
-    }
-  };
-
-  useEffect(() => {
-    fetchProfile();
-    checkToday();
-  }, []);
-
   const getAuthHeader = () => {
     const token = localStorage.getItem('token');
     return { Authorization: `Bearer ${token}` };
@@ -70,6 +39,11 @@ export default function CheckIn() {
       console.error('检查打卡失败:', err);
     }
   };
+
+  useEffect(() => {
+    fetchProfile();
+    checkToday();
+  }, []);
 
   const handleCheckIn = async () => {
     try {

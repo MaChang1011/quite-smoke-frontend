@@ -32,25 +32,6 @@ export default function Friends() {
     fetchFriends();
   }, []);
 
-  const getAuthHeader = () => {
-    const token = localStorage.getItem('token');
-    return { Authorization: `Bearer ${token}` };
-  };
-
-  const fetchFriends = async () => {
-    try {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/friends`, {
-        headers: getAuthHeader()
-      });
-      setFriends(res.data.friends);
-    } catch (err) {
-      setError('获取亲友列表失败');
-      console.error('获取亲友列表失败:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleAddFriend = async () => {
     if (!email) {
       setError('请输入邮箱');
