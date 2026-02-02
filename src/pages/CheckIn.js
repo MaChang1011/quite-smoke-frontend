@@ -9,6 +9,32 @@ export default function CheckIn() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const fetchProfile = async () => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/user/profile`, {
+        headers: getAuthHeader()
+      });
+      setUser(res.data);
+      setStreak(res.data.streak_days);
+    } catch (err) {
+      setError('获取资料失败');
+      console.error('获取用户资料失败:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkToday = async () => {
+    try {
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/check-in/today`, {
+        headers: getAuthHeader()
+      });
+      setCheckedToday(res.data.checked_in);
+    } catch (err) {
+      console.error('检查打卡失败:', err);
+    }
+  };
+
   useEffect(() => {
     fetchProfile();
     checkToday();
@@ -48,7 +74,7 @@ export default function CheckIn() {
   const handleCheckIn = async () => {
     try {
       setLoading(true);
-      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/check-in`, {}, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/check-in`, {}, {
         headers: getAuthHeader()
       });
       setStreak(streak + 1);
