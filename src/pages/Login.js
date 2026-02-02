@@ -14,14 +14,36 @@ export default function Login() {
       return;
     }
 
+    // 验证邮箱格式
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('请输入有效的邮箱地址');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/send-link`, { email });
+      const apiUrl = process.env.REACT_APP_API_URL;
+      if (!apiUrl) {
+        throw new Error('API URL 未配置');
+      }
+
+      await axios.post(`${apiUrl}/api/auth/send-link`, { email }, {
+        timeout: 10000
+      });
       setSent(true);
     } catch (err) {
-      setError('发送失败，请重试');
+      if (err.response?.status === 400) {
+        setError('邮箱格式不正确');
+      } else if (err.response?.status === 500) {
+        setError('服务器错误，请稍后重试');
+      } else if (err.code === 'ECONNABORTED') {
+        setError('请求超时，请检查网络连接');
+      } else {
+        setError('发送失败，请检查网络连接后重试');
+      }
       console.error('发送登录链接失败:', err);
     } finally {
       setLoading(false);
@@ -44,6 +66,7 @@ export default function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSendLink()}
                 disabled={loading}
+                autoFocus
               />
             </div>
 
@@ -51,7 +74,7 @@ export default function Login() {
 
             <button
               onClick={handleSendLink}
-              disabled={loading}
+              disabled={loading || !email}
               className="btn-primary"
             >
               {loading ? '发送中...' : '发送登录链接'}
@@ -71,6 +94,7 @@ export default function Login() {
               onClick={() => {
                 setSent(false);
                 setEmail('');
+                setError('');
               }}
               className="btn-secondary"
             >
